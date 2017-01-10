@@ -29,7 +29,8 @@ endif
 mac_sdk_path := $(shell xcode-select -print-path)
 # try /Applications/Xcode*.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.?.sdk
 #  or /Volume/Xcode/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.?.sdk
-mac_sdk_root := $(mac_sdk_path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX$(mac_sdk_version).sdk
+# mac_sdk_root := $(mac_sdk_path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX$(mac_sdk_version).sdk
+mac_sdk_root := $(mac_sdk_path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 ifeq ($(wildcard $(mac_sdk_root)),)
 # try legacy /Developer/SDKs/MacOSX10.?.sdk
 mac_sdk_root := /Developer/SDKs/MacOSX$(mac_sdk_version).sdk
