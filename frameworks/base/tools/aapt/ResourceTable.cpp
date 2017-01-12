@@ -1755,13 +1755,15 @@ ResourceTable::ResourceTable(Bundle* bundle, const String16& assetsPackage, Reso
     , mNumLocal(0)
     , mBundle(bundle)
 {
-    //[Rover12421]>
-    ssize_t packageId = mBundle->getForcedPackageId();
+    //modify by liufukang 2017-1-12
+    ssize_t packageId = mBundle->getPackageId();
 //    ssize_t packageId = -1;
     if(packageId != -1) {
+        printf("specified packageId:%d\n", int(packageId));
         goto END_PACKAGE_ID;
     }
-    //[Rover12421]<
+    //modify by liufukang end
+
     switch (mPackageType) {
         case App:
         case AppFeature:

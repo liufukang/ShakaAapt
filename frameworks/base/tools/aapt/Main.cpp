@@ -147,10 +147,10 @@ void usage(void)
         "       higher, the default encoding for resources will be in UTF-8.\n"
         "   --target-sdk-version\n"
         "       inserts android:targetSdkVersion in to manifest.\n"
-        //[Rover12421]>
-        "   --forced-package-id\n"
-        "       forces value as package-id\n"
-        //[Rover12421]<
+        //add by liufukang 2017-1-12
+        "   --package-id\n"
+        "       set value as package-id\n"
+        //add by liufukang end
         "   --max-res-version\n"
         "       ignores versioned resource directories above the given value.\n"
         "   --values\n"
@@ -526,17 +526,17 @@ int main(int argc, char* const argv[])
             case '-':
                 if (strcmp(cp, "-debug-mode") == 0) {
                     bundle.setDebugMode(true);
-                //[Rover12421]>
-                } else if (strcmp(cp, "-forced-package-id") == 0) {
+                //add by liufukang 2017-1-12
+                } else if (strcmp(cp, "-package-id") == 0) {
                     argc--;
                     argv++;
                     if (!argc) {
-                        fprintf(stderr, "ERROR: No argument supplied for '--forced-package-id' option\n");
+                        fprintf(stderr, "ERROR: No argument supplied for '--package-id' option\n");
                         wantUsage = true;
                         goto bail;
                     }
-                    bundle.setForcedPackageId(atoi(argv[0]));
-                //[Rover12421]
+                    bundle.setPackageId(atoi(argv[0]));
+                //add by liufukang end 
                 } else if (strcmp(cp, "-min-sdk-version") == 0) {
                     argc--;
                     argv++;

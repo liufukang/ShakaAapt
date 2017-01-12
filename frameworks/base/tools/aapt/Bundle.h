@@ -67,8 +67,8 @@ public:
           mSingleCrunchInputFile(NULL), mSingleCrunchOutputFile(NULL),
           mBuildSharedLibrary(false),
           mBuildAppAsSharedLibrary(false),
-          //[Rover12421]>
-          mForcedPackageId(-1),
+          //
+          mPackageId(-1),
           //[Rover12421]<
           mArgc(0), mArgv(NULL)
         {}
@@ -223,10 +223,10 @@ public:
     void setNoVersionVectors(bool val) { mNoVersionVectors = val; }
     bool getNoVersionVectors() const { return mNoVersionVectors; }
 
-    //[Rover12421]>
-    int getForcedPackageId() const { return mForcedPackageId; }
-    void setForcedPackageId(int val) { mForcedPackageId = val; }
-    //[Rover12421]<
+    //add by liufukang 2017-1-12
+    int getPackageId() const { return mPackageId; }
+    void setPackageId(int val) { mPackageId = val; }
+    //add by liufukang end
 
     /*
      * Set and get the file specification.
@@ -352,9 +352,9 @@ private:
     android::String8 mPlatformVersionName;
     android::String8 mPrivateSymbolsPackage;
 
-    //[Rover12421]>
-    int 	    mForcedPackageId;
-    //[Rover12421]<
+    //add by liufukang 2017-1-12
+    int 	    mPackageId;
+    //add by liufukang end
 
     /* file specification */
     int         mArgc;

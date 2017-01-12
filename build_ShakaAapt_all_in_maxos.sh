@@ -6,7 +6,7 @@ export BinDir=ShakaAaptBin
 
 export USE_CCACHE=1
 export CCACHE_DIR=$(pwd)/.ccache
-prebuilts/misc/darwin-x86/ccache/ccache -M 50G
+# prebuilts/misc/darwin-x86/ccache/ccache -M 50G
 
 rm -rf out-x86 out-x86_64
 
