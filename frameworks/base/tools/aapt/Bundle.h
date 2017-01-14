@@ -228,6 +228,11 @@ public:
     void setPackageId(int val) { mPackageId = val; }
     //add by liufukang end
 
+    //add by liufukang 2017-1-13
+    void setBaseResDir(const char* resDir) { mBaseResDir = resDir; }
+    const char* getBaseResDir() const { return mBaseResDir; }
+    //add by liufukang end
+
     /*
      * Set and get the file specification.
      *
@@ -355,6 +360,11 @@ private:
     //add by liufukang 2017-1-12
     int 	    mPackageId;
     //add by liufukang end
+
+    //add by liufukang 2017-1-13
+    const char* mBaseResDir;
+    //add by liufukang end
+
 
     /* file specification */
     int         mArgc;

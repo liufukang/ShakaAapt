@@ -1558,6 +1558,20 @@ status_t AaptAssets::buildIncludedResources(Bundle* bundle)
         }
     }
 
+    //add by liufukang 2017-1-13
+    String8 baseResDir(bundle->getBaseResDir());
+    if (!baseResDir.isEmpty()){
+        if (bundle->getVerbose()) {
+            printf("Including base resources for dir:%s\n", baseResDir.string());
+        }
+
+        if ( !mIncludedAssets.addAssetPath(baseResDir, NULL)) {
+            fprintf(stderr, "ERROR: base resources dir '%s' not found.\n",
+                    baseResDir.string());
+        }
+    }
+    //add by liufukang end
+
     mHaveIncludedAssets = true;
 
     return NO_ERROR;

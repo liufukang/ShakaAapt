@@ -487,6 +487,17 @@ int main(int argc, char* const argv[])
                 convertPath(argv[0]);
                 bundle.setCrunchedOutputDir(argv[0]);
                 break;
+            case 'B':
+                argc--;
+                argv++;
+                if (!argc){
+                    fprintf(stderr, "ERROR: No argument supplied for '-B' option\n");
+                    wantUsage = true;
+                    goto bail;
+                }
+                convertPath(argv[0]);
+                bundle.setBaseResDir(argv[0]);
+                break;
             case 'i':
                 argc--;
                 argv++;
