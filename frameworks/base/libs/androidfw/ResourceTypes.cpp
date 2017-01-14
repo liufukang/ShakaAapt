@@ -5038,6 +5038,7 @@ bool ResTable::stringToFloat(const char16_t* s, size_t len, Res_value* outValue)
 bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                              const char16_t* s, size_t len,
                              bool preserveSpaces, bool coerceType,
+                             uint32_t pkgID,
                              uint32_t attrID,
                              const String16* defType,
                              const String16* defPackage,
@@ -5188,11 +5189,15 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                     }
                 }
 
+                //modify by liufukang 2017-1-13 
                 uint32_t packageId = Res_GETPACKAGE(rid) + 1;
-                if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+                //if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+                if (packageId != pkgID && packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
                     outValue->dataType = Res_value::TYPE_DYNAMIC_REFERENCE;
                 }
                 outValue->data = rid;
+                //modify by liufukang end
+
                 return true;
             }
 
@@ -5206,26 +5211,20 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                                 String8(name).string(), rid);
                     }
                     uint32_t packageId = Res_GETPACKAGE(rid) + 1;
+
+                    //modify by liufukang 2017-1-13 
                     if (packageId == 0x00) {
                         outValue->data = rid;
                         outValue->dataType = Res_value::TYPE_DYNAMIC_REFERENCE;
                         return true;
-                    } else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+                    //} else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+                    } else if (packageId == pkgID || packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
                         // We accept packageId's generated as 0x01 in order to support
                         // building the android system resources
                         outValue->data = rid;
                         return true;
                     }
-                    //[Rover12421]>
-                    if (packageId > 0) {
-                        /**
-                         * 只要packageId>0是正常的即可
-                         * 原罗辑packageId实际是package类型了.只有0x00(库),0x7f(app),0x01(系统)三种了
-                         */
-                        outValue->data = rid;
-                        return true;
-                    }
-                    //[Rover12421]<
+                    //modify by liufukang end
                 }
             }
         }
@@ -5365,29 +5364,37 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                     Res_GETTYPE(rid), Res_GETENTRY(rid));
             }
 
+            //modify by liufukang 2017-1-13 
             uint32_t packageId = Res_GETPACKAGE(rid) + 1;
-            if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+            //if (packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
+            if (packageId != pkgID && packageId != APP_PACKAGE_ID && packageId != SYS_PACKAGE_ID) {
                 outValue->dataType = Res_value::TYPE_DYNAMIC_ATTRIBUTE;
             }
+            //modify by liufukang end
+
             outValue->data = rid;
             return true;
         }
 
         if (accessor) {
             uint32_t rid = accessor->getCustomResource(package, type, name);
+
+            //modify by liufukang 2017-1-13 
             if (rid != 0) {
                 uint32_t packageId = Res_GETPACKAGE(rid) + 1;
                 if (packageId == 0x00) {
                     outValue->data = rid;
                     outValue->dataType = Res_value::TYPE_DYNAMIC_ATTRIBUTE;
                     return true;
-                } else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+                //} else if (packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
+                } else if (packageId == pkgID || packageId == APP_PACKAGE_ID || packageId == SYS_PACKAGE_ID) {
                     // We accept packageId's generated as 0x01 in order to support
                     // building the android system resources
                     outValue->data = rid;
                     return true;
                 }
             }
+            //modify by liufukang end
         }
 
         if (accessor != NULL) {
@@ -6438,6 +6445,9 @@ DynamicRefTable::DynamicRefTable(uint8_t packageId, bool appAsLib)
     // Reserved package ids
     mLookupTable[APP_PACKAGE_ID] = APP_PACKAGE_ID;
     mLookupTable[SYS_PACKAGE_ID] = SYS_PACKAGE_ID;
+	//add by liufukang 2017-1-13 
+    mLookupTable[packageId] = packageId;
+	//add by liufukang end
 }
 
 status_t DynamicRefTable::load(const ResTable_lib_header* const header)
@@ -6516,12 +6526,13 @@ status_t DynamicRefTable::lookupResourceId(uint32_t* resId) const {
     uint32_t res = *resId;
     size_t packageId = Res_GETPACKAGE(res) + 1;
 
-    if (packageId == APP_PACKAGE_ID && !mAppAsLib) {
+    //modify by liufukang 2017-1-13 
+    if ( (packageId == APP_PACKAGE_ID || packageId == mAssignedPackageId) && !mAppAsLib ) {
         // No lookup needs to be done, app package IDs are absolute.
         return NO_ERROR;
     }
 
-    if (packageId == 0 || (packageId == APP_PACKAGE_ID && mAppAsLib)) {
+    if (packageId == 0 || ( (packageId == APP_PACKAGE_ID || packageId == mAssignedPackageId) && mAppAsLib) ) {
         // The package ID is 0x00. That means that a shared library is accessing
         // its own local resource.
         // Or if app resource is loaded as shared library, the resource which has
@@ -6530,6 +6541,7 @@ status_t DynamicRefTable::lookupResourceId(uint32_t* resId) const {
         *resId = (0xFFFFFF & (*resId)) | (((uint32_t) mAssignedPackageId) << 24);
         return NO_ERROR;
     }
+    //modify by liufukang end
 
     // Do a proper lookup.
     uint8_t translatedId = mLookupTable[packageId];

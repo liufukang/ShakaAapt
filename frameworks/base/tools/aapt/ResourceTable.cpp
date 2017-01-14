@@ -101,7 +101,7 @@ status_t compileXmlFile(const Bundle* bundle,
     }
 
     if ((options&XML_COMPILE_PARSE_VALUES) != 0) {
-        status_t err = root->parseValues(assets, table);
+        status_t err = root->parseValues(assets, bundle, table);
         if (err != NO_ERROR) {
             hasErrors = true;
         }
@@ -2317,7 +2317,7 @@ bool ResourceTable::stringToValue(Res_value* outValue, StringPool* pool,
         // Text is not styled so it can be any type...  let's figure it out.
         res = mAssets->getIncludedResources()
             .stringToValue(outValue, &finalStr, str.string(), str.size(), preserveSpaces,
-                            coerceType, attrID, NULL, &mAssetsPackage, this,
+                            coerceType, mBundle->getPackageId(), attrID, NULL, &mAssetsPackage, this,
                            accessorCookie, attrType);
     } else {
         // Styled text can only be a string, and while collecting the style

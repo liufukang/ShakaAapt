@@ -1813,6 +1813,7 @@ public:
     bool stringToValue(Res_value* outValue, String16* outString,
                        const char16_t* s, size_t len,
                        bool preserveSpaces, bool coerceType,
+                       uint32_t pkgID = 0,
                        uint32_t attrID = 0,
                        const String16* defType = NULL,
                        const String16* defPackage = NULL,

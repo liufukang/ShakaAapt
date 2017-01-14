@@ -974,8 +974,7 @@ void XMLNode::removeWhitespace(bool stripAll, const char** cDataTags)
     }
 }
 
-status_t XMLNode::parseValues(const sp<AaptAssets>& assets,
-                              ResourceTable* table)
+status_t XMLNode::parseValues(const sp<AaptAssets>& assets, const Bundle* bundle, ResourceTable* table)
 {
     bool hasErrors = false;
 
@@ -990,7 +989,7 @@ status_t XMLNode::parseValues(const sp<AaptAssets>& assets,
             if (!assets->getIncludedResources()
                     .stringToValue(&e.value, &e.string,
                                   e.string.string(), e.string.size(), true, true,
-                                  e.nameResId, NULL, &defPackage, table, &ac)) {
+                                  bundle->getPackageId(), e.nameResId, NULL, &defPackage, table, &ac)) {
                 hasErrors = true;
             }
             if (kIsDebug) {
@@ -1002,7 +1001,7 @@ status_t XMLNode::parseValues(const sp<AaptAssets>& assets,
     }
     const size_t N = mChildren.size();
     for (size_t i=0; i<N; i++) {
-        status_t err = mChildren.itemAt(i)->parseValues(assets, table);
+        status_t err = mChildren.itemAt(i)->parseValues(assets, bundle, table);
         if (err != NO_ERROR) {
             hasErrors = true;
         }
