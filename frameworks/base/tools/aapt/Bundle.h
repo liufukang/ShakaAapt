@@ -67,9 +67,10 @@ public:
           mSingleCrunchInputFile(NULL), mSingleCrunchOutputFile(NULL),
           mBuildSharedLibrary(false),
           mBuildAppAsSharedLibrary(false),
-          //
           mPackageId(-1),
-          //[Rover12421]<
+          mBaseResDir(NULL),
+          mBaseInline(false),
+          mBaseOutputFile(NULL),
           mArgc(0), mArgv(NULL)
         {}
     ~Bundle(void) {}
@@ -231,6 +232,10 @@ public:
     //add by liufukang 2017-1-13
     void setBaseResDir(const char* resDir) { mBaseResDir = resDir; }
     const char* getBaseResDir() const { return mBaseResDir; }
+    void setBaseOutputFile(const char* outputFile) { mBaseOutputFile = outputFile; }
+    const char* getBaseOutputFile() const { return mBaseOutputFile; }
+    void setBaseInline(bool isInline) { mBaseInline = isInline; }
+    bool getBaseInline() const { return mBaseInline; }
     //add by liufukang end
 
     /*
@@ -363,6 +368,10 @@ private:
 
     //add by liufukang 2017-1-13
     const char* mBaseResDir;
+
+    bool mBaseInline;
+
+    const char* mBaseOutputFile;
     //add by liufukang end
 
 

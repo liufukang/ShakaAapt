@@ -1559,6 +1559,7 @@ status_t AaptAssets::buildIncludedResources(Bundle* bundle)
     }
 
     //add by liufukang 2017-1-13
+#if 0    
     String8 baseResDir(bundle->getBaseResDir());
     if (!baseResDir.isEmpty()){
         if (bundle->getVerbose()) {
@@ -1570,6 +1571,7 @@ status_t AaptAssets::buildIncludedResources(Bundle* bundle)
                     baseResDir.string());
         }
     }
+#endif    
     //add by liufukang end
 
     mHaveIncludedAssets = true;

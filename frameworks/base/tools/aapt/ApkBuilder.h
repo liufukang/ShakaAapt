@@ -68,7 +68,10 @@ private:
 };
 
 class ApkSplit : public OutputSet {
+    
 public:
+    ApkSplit(const std::set<ConfigDescription>& configs, const android::sp<ResourceFilter>& filter, bool isBase=false);
+
     android::status_t addEntry(const String8& path, const android::sp<AaptFile>& file);
 
     const std::set<OutputEntry>& getEntries() const {
@@ -107,9 +110,6 @@ public:
 
 private:
     friend class ApkBuilder;
-
-    ApkSplit(const std::set<ConfigDescription>& configs, const android::sp<ResourceFilter>& filter, bool isBase=false);
-
     std::set<ConfigDescription> mConfigs;
     const sp<ResourceFilter> mFilter;
     const bool mIsBase;

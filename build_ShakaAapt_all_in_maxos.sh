@@ -18,8 +18,8 @@ cp out-x86/host/darwin-x86/bin/aapt "$BinDir/darwin-x86/bin/aapt"
 
 # darwin-x86_64
 
-OUT_DIR=out-x86_64 make -B BUILD_NUMBER=$BUILD_NUMBER LOCAL_MULTILIB=64 USE_NINJA=false aapt -j4
-mkdir -p "$BinDir/darwin-x86_64/bin"
-cp out-x86_64/host/darwin-x86/bin/aapt "$BinDir/darwin-x86_64/bin/aapt"
+#OUT_DIR=out-x86_64 make -B BUILD_NUMBER=$BUILD_NUMBER LOCAL_MULTILIB=64 USE_NINJA=false aapt -j4
+#mkdir -p "$BinDir/darwin-x86_64/bin"
+#cp out-x86_64/host/darwin-x86/bin/aapt "$BinDir/darwin-x86_64/bin/aapt"
 
 
