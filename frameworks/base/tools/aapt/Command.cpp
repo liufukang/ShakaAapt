@@ -2555,14 +2555,16 @@ int doPackage(Bundle* bundle)
 
     baseAssets = new AaptAssets();
 
-    printf("baseAssets.print:\n");
-    err = baseAssets->slurpFromArgs(bundle);
+#if 0
+    err = baseAssets->slurpFromArgs(bundle, true);
     if (err < 0) {
         goto bail;
     }
-    if ( bundle->getVerbose() ){
+
+    if (bundle->getVerbose()) {
         baseAssets->print(String8());
     }
+#endif
 
     // Create the ApkBuilder, which will collect the compiled files
     // to write to the final APK (or sets of APKs if we are building

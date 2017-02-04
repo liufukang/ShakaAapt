@@ -559,9 +559,10 @@ public:
 
     bool isJavaSymbol(const AaptSymbolEntry& sym, bool includePrivate) const;
 
-    status_t buildIncludedResources(Bundle* bundle);
+    status_t buildIncludedAndBasedResources(Bundle* bundle);
     status_t addIncludedResources(const sp<AaptFile>& file);
     const ResTable& getIncludedResources() const;
+    const ResTable& getBasedResources() const;//add by liufukang 2017-2-4 
     AssetManager& getAssetManager();
 
     void print(const String8& prefix) const;
@@ -610,6 +611,11 @@ private:
 
     bool mHaveIncludedAssets;
     AssetManager mIncludedAssets;
+
+	//add by liufukang 2017-2-4 
+    bool mHaveBasedAssets; 
+    AssetManager mBasedAssets;
+	//add by liufukang end
 
     sp<AaptAssets> mOverlay;
     KeyedVector<String8, sp<ResourceTypeSet> >* mRes;

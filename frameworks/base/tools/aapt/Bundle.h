@@ -68,8 +68,9 @@ public:
           mBuildSharedLibrary(false),
           mBuildAppAsSharedLibrary(false),
           mPackageId(-1),
-          mBaseResDir(NULL),
           mBaseInline(false),
+          mBaseDir(NULL),
+          mBasePackage(NULL),
           mBaseOutputFile(NULL),
           mArgc(0), mArgv(NULL)
         {}
@@ -230,8 +231,10 @@ public:
     //add by liufukang end
 
     //add by liufukang 2017-1-13
-    void setBaseResDir(const char* resDir) { mBaseResDir = resDir; }
-    const char* getBaseResDir() const { return mBaseResDir; }
+    void setBaseDir(const char* baseDir) { mBaseDir = baseDir; }
+    const char* getBaseDir() const { return mBaseDir; }
+    void setBasePackage(const char* basePackage) { mBasePackage = basePackage; }
+    const char* getBasePackage() const { return mBasePackage; }
     void setBaseOutputFile(const char* outputFile) { mBaseOutputFile = outputFile; }
     const char* getBaseOutputFile() const { return mBaseOutputFile; }
     void setBaseInline(bool isInline) { mBaseInline = isInline; }
@@ -367,9 +370,11 @@ private:
     //add by liufukang end
 
     //add by liufukang 2017-1-13
-    const char* mBaseResDir;
-
     bool mBaseInline;
+
+    const char* mBaseDir;
+
+    const char* mBasePackage;
 
     const char* mBaseOutputFile;
     //add by liufukang end

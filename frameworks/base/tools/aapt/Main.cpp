@@ -497,7 +497,7 @@ int main(int argc, char* const argv[])
                     goto bail;
                 }
                 convertPath(argv[0]);
-                bundle.setBaseResDir(argv[0]);
+                bundle.setBaseDir(argv[0]);
                 break;
             //add by liufukang end
             case 'i':
@@ -550,8 +550,6 @@ int main(int argc, char* const argv[])
                     }
                     bundle.setPackageId(atoi(argv[0]));
                 }else if ( strcmp(cp, "-base-inline-flag") == 0 ) {
-                    argc--;
-                    argv++;
                     if (!argc) {
                         fprintf(stderr, "ERROR: No argument supplied for '--base-inline-flag' option\n");
                         wantUsage = true;

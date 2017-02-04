@@ -5045,8 +5045,15 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                              Accessor* accessor,
                              void* accessorCookie,
                              uint32_t attrType,
-                             bool enforcePrivate) const
+                             bool enforcePrivate,
+                             bool ignoreError) const
 {
+	//add by liufukang 2017-2-4 
+    if ( ignoreError ){
+        accessor = NULL;
+    }
+	//add by liufukang end
+	
     bool localizationSetting = accessor != NULL && accessor->getLocalizationSetting();
     const char* errorMsg = NULL;
 

@@ -1806,7 +1806,7 @@ static uint32_t findLargestTypeIdForPackage(const ResTable& table, const String1
 
 status_t ResourceTable::addIncludedResources(Bundle* bundle, const sp<AaptAssets>& assets)
 {
-    status_t err = assets->buildIncludedResources(bundle);
+    status_t err = assets->buildIncludedAndBasedResources(bundle);
     if (err != NO_ERROR) {
         return err;
     }
@@ -2032,6 +2032,16 @@ bool ResourceTable::hasBagOrEntry(const String16& package,
         return true;
     }
 
+	//add by liufukang 2017-2-4 
+    rid = mAssets->getBasedResources()
+        .identifierForName(name.string(), name.size(),
+                           type.string(), type.size(),
+                           package.string(), package.size());
+    if (rid != 0) {
+        return true;
+    }
+	//add by liufukang end
+
     sp<Package> p = mPackages.valueFor(package);
     if (p != NULL) {
         sp<Type> t = p->getTypes().valueFor(type);
@@ -2204,6 +2214,8 @@ uint32_t ResourceTable::getResId(const String16& package,
                                  const String16& name,
                                  bool onlyPublic) const
 {
+    
+
     uint32_t id = ResourceIdCache::lookup(package, type, name, onlyPublic);
     if (id != 0) return id;     // cache hit
 
@@ -2214,6 +2226,16 @@ uint32_t ResourceTable::getResId(const String16& package,
                            type.string(), type.size(),
                            package.string(), package.size(),
                            &specFlags);
+	//add by liufukang 2017-2-4 
+    if ( rid == 0 ){
+        rid = mAssets->getBasedResources()
+        .identifierForName(name.string(), name.size(),
+                           type.string(), type.size(),
+                           package.string(), package.size(),
+                           &specFlags);
+    }
+	//add by liufukang end
+
     if (rid != 0) {
         if (onlyPublic) {
             if ((specFlags & ResTable_typeSpec::SPEC_PUBLIC) == 0) {
@@ -2318,7 +2340,18 @@ bool ResourceTable::stringToValue(Res_value* outValue, StringPool* pool,
         res = mAssets->getIncludedResources()
             .stringToValue(outValue, &finalStr, str.string(), str.size(), preserveSpaces,
                             coerceType, mBundle->getPackageId(), attrID, NULL, &mAssetsPackage, this,
-                           accessorCookie, attrType);
+                           accessorCookie, attrType, true, true);
+//add by liufukang 2017-2-4 
+#if 1
+        if (!res){
+            res = mAssets->getBasedResources()
+                .stringToValue(outValue, &finalStr, str.string(), str.size(), preserveSpaces,
+                                coerceType, mBundle->getPackageId(), attrID, NULL, &mAssetsPackage, this,
+                               accessorCookie, attrType);
+        }
+#endif         
+//add by liufukang end
+
     } else {
         // Styled text can only be a string, and while collecting the style
         // information we have already processed that string!
@@ -3110,6 +3143,8 @@ status_t ResourceTable::flatten(Bundle* bundle, const sp<const ResourceFilter>& 
                     if (cl->getPublic()) {
                         typeSpecFlags[ei] |= htodl(ResTable_typeSpec::SPEC_PUBLIC);
                     }
+
+                    //typeSpecFlags[ei] |= htodl(ResTable_typeSpec::SPEC_PUBLIC);
 
                     if (skipEntireType) {
                         continue;

@@ -2233,6 +2233,16 @@ static status_t writeLayoutClasses(
                     name16.string(), name16.size(),
                     attr16.string(), attr16.size(),
                     package16.string(), package16.size(), &typeSpecFlags);
+
+				//add by liufukang 2017-2-4 
+                if (code == 0){
+                    code = assets->getBasedResources().identifierForName(
+                    name16.string(), name16.size(),
+                    attr16.string(), attr16.size(),
+                    package16.string(), package16.size(), &typeSpecFlags);
+                }
+				//add by liufukang end
+
                 if (code == 0) {
                     fprintf(stderr, "ERROR: In <declare-styleable> %s, unable to find attribute %s\n",
                             nclassName.string(), sym.name.string());
@@ -2466,6 +2476,16 @@ static status_t writeTextLayoutClasses(
                     name16.string(), name16.size(),
                     attr16.string(), attr16.size(),
                     package16.string(), package16.size(), &typeSpecFlags);
+
+				//add by liufukang 2017-2-4 
+                if (code == 0){
+                    code = assets->getBasedResources().identifierForName(
+                    name16.string(), name16.size(),
+                    attr16.string(), attr16.size(),
+                    package16.string(), package16.size(), &typeSpecFlags);
+                }
+				//add by liufukang end
+				
                 if (code == 0) {
                     fprintf(stderr, "ERROR: In <declare-styleable> %s, unable to find attribute %s\n",
                             nclassName.string(), sym.name.string());

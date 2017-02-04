@@ -888,7 +888,9 @@ status_t AaptSymbols::applyJavaSymbols(const sp<AaptSymbols>& javaSymbols)
 AaptAssets::AaptAssets()
     : AaptDir(String8(), String8()),
       mHavePrivateSymbols(false),
-      mChanged(false), mHaveIncludedAssets(false),
+      mChanged(false), 
+      mHaveIncludedAssets(false),
+      mHaveBasedAssets(false),
       mRes(NULL) {}
 
 const SortedVector<AaptGroupEntry>& AaptAssets::getGroupEntries() const {
@@ -980,6 +982,8 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
 
     const int N = bundle->getFileSpecCount();
 
+    bool baseInline = false;//add by liufukang 2017-2-4 
+
     /*
      * If a package manifest was specified, include that first.
      */
@@ -1030,6 +1034,35 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
     /*
      * If a directory of resource-specific assets was supplied, slurp 'em up.
      */
+	 //add by liufukang 2017-2-4 
+    if (bundle->getBaseInline() && bundle->getBaseDir()){
+        String8 resPath(bundle->getBaseDir());
+        resPath.appendPath(kResourceDir);
+
+        FileType type = getFileType(resPath);
+        if (type == kFileTypeNonexistent) {
+            fprintf(stderr, "ERROR: input directory '%s' does not exist\n", resPath.string());
+            return UNKNOWN_ERROR;
+        }
+        if (type != kFileTypeDirectory) {
+            fprintf(stderr, "ERROR: '%s' is not a directory\n", resPath.string());
+            return UNKNOWN_ERROR;
+        }
+
+        baseInline = true;
+        count = current->slurpResourceTree(bundle, resPath);
+        if (count > 0) {
+          count = current->filter(bundle);
+        }
+
+        if (count < 0) {
+            totalCount = count;
+            goto bail;
+        }
+        totalCount += count;
+    }
+	//add by liufukang end
+	
     for (size_t i=0; i<dirCount; i++) {
         const char *res = resDirs[i];
         if (res) {
@@ -1039,7 +1072,7 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
                 return UNKNOWN_ERROR;
             }
             if (type == kFileTypeDirectory) {
-                if (i>0) {
+                if (baseInline || i>0) {
                     sp<AaptAssets> nextOverlay = new AaptAssets();
                     current->setOverlay(nextOverlay);
                     current = nextOverlay;
@@ -1523,58 +1556,55 @@ bool AaptAssets::isJavaSymbol(const AaptSymbolEntry& sym, bool includePrivate) c
     return false;
 }
 
-status_t AaptAssets::buildIncludedResources(Bundle* bundle)
+status_t AaptAssets::buildIncludedAndBasedResources(Bundle* bundle)
 {
-    if (mHaveIncludedAssets) {
-        return NO_ERROR;
-    }
+    if ( !mHaveIncludedAssets ) {
+        // Add in all includes.
+        const Vector<String8>& includes = bundle->getPackageIncludes();
+        const size_t packageIncludeCount = includes.size();
+        for (size_t i = 0; i < packageIncludeCount; i++) {
+            if (bundle->getVerbose()) {
+                printf("Including resources from package: %s\n", includes[i].string());
+            }
 
-    // Add in all includes.
-    const Vector<String8>& includes = bundle->getPackageIncludes();
-    const size_t packageIncludeCount = includes.size();
-    for (size_t i = 0; i < packageIncludeCount; i++) {
-        if (bundle->getVerbose()) {
-            printf("Including resources from package: %s\n", includes[i].string());
+            if (!mIncludedAssets.addAssetPath(includes[i], NULL)) {
+                fprintf(stderr, "ERROR: Asset package include '%s' not found.\n",
+                        includes[i].string());
+                return UNKNOWN_ERROR;
+            }
         }
 
-        if (!mIncludedAssets.addAssetPath(includes[i], NULL)) {
-            fprintf(stderr, "ERROR: Asset package include '%s' not found.\n",
-                    includes[i].string());
-            return UNKNOWN_ERROR;
-        }
-    }
+        const String8& featureOfBase = bundle->getFeatureOfPackage();
+        if (!featureOfBase.isEmpty()) {
+            if (bundle->getVerbose()) {
+                printf("Including base feature resources from package: %s\n",
+                        featureOfBase.string());
+            }
 
-    const String8& featureOfBase = bundle->getFeatureOfPackage();
-    if (!featureOfBase.isEmpty()) {
-        if (bundle->getVerbose()) {
-            printf("Including base feature resources from package: %s\n",
-                    featureOfBase.string());
+            if (!mIncludedAssets.addAssetPath(featureOfBase, NULL)) {
+                fprintf(stderr, "ERROR: base feature package '%s' not found.\n",
+                        featureOfBase.string());
+                return UNKNOWN_ERROR;
+            }
         }
 
-        if (!mIncludedAssets.addAssetPath(featureOfBase, NULL)) {
-            fprintf(stderr, "ERROR: base feature package '%s' not found.\n",
-                    featureOfBase.string());
-            return UNKNOWN_ERROR;
-        }
+        mHaveIncludedAssets = true;
     }
 
     //add by liufukang 2017-1-13
-#if 0    
-    String8 baseResDir(bundle->getBaseResDir());
-    if (!baseResDir.isEmpty()){
-        if (bundle->getVerbose()) {
-            printf("Including base resources for dir:%s\n", baseResDir.string());
-        }
+    if ( !mHaveBasedAssets ){
+        if (!bundle->getBaseInline() && bundle->getBaseDir()){
+            if (bundle->getVerbose()) {
+                    printf("Including base resources for dir:%s\n", bundle->getBaseDir());
+            }
 
-        if ( !mIncludedAssets.addAssetPath(baseResDir, NULL)) {
-            fprintf(stderr, "ERROR: base resources dir '%s' not found.\n",
-                    baseResDir.string());
-        }
+            if ( !mBasedAssets.addAssetPath(String8(bundle->getBaseDir()), NULL)) {
+                fprintf(stderr, "ERROR: base resources dir '%s' not found.\n", bundle->getBaseDir());
+            }
+        }  
+        mHaveBasedAssets = true;
     }
-#endif    
     //add by liufukang end
-
-    mHaveIncludedAssets = true;
 
     return NO_ERROR;
 }
@@ -1589,6 +1619,11 @@ status_t AaptAssets::addIncludedResources(const sp<AaptFile>& file)
 const ResTable& AaptAssets::getIncludedResources() const
 {
     return mIncludedAssets.getResources(false);
+}
+
+const ResTable& AaptAssets::getBasedResources() const
+{
+    return mBasedAssets.getResources(false);
 }
 
 AssetManager& AaptAssets::getAssetManager()

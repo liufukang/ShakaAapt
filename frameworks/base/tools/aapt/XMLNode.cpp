@@ -989,8 +989,22 @@ status_t XMLNode::parseValues(const sp<AaptAssets>& assets, const Bundle* bundle
             if (!assets->getIncludedResources()
                     .stringToValue(&e.value, &e.string,
                                   e.string.string(), e.string.size(), true, true,
-                                  bundle->getPackageId(), e.nameResId, NULL, &defPackage, table, &ac)) {
+                                  bundle->getPackageId(), e.nameResId, NULL, &defPackage, table, &ac, 
+
+                                  ResTable_map::TYPE_ANY, true, true)) {
+
+//add by liufukang 2017-2-4 
+#if 1
+                if (!assets->getBasedResources()
+                    .stringToValue(&e.value, &e.string,
+                                  e.string.string(), e.string.size(), true, true,
+                                  bundle->getPackageId(), e.nameResId, NULL, &defPackage, table, &ac)){
+                    hasErrors = true;
+                }
+#else
                 hasErrors = true;
+#endif                
+//add by liufukang end       
             }
             if (kIsDebug) {
                 printf("Attr %s: type=0x%x, str=%s\n",
