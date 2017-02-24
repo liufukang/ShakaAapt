@@ -1034,35 +1034,6 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
     /*
      * If a directory of resource-specific assets was supplied, slurp 'em up.
      */
-	 //add by liufukang 2017-2-4 
-    if (bundle->getBaseInline() && bundle->getBaseDir()){
-        String8 resPath(bundle->getBaseDir());
-        resPath.appendPath(kResourceDir);
-
-        FileType type = getFileType(resPath);
-        if (type == kFileTypeNonexistent) {
-            fprintf(stderr, "ERROR: input directory '%s' does not exist\n", resPath.string());
-            return UNKNOWN_ERROR;
-        }
-        if (type != kFileTypeDirectory) {
-            fprintf(stderr, "ERROR: '%s' is not a directory\n", resPath.string());
-            return UNKNOWN_ERROR;
-        }
-
-        baseInline = true;
-        count = current->slurpResourceTree(bundle, resPath);
-        if (count > 0) {
-          count = current->filter(bundle);
-        }
-
-        if (count < 0) {
-            totalCount = count;
-            goto bail;
-        }
-        totalCount += count;
-    }
-	//add by liufukang end
-	
     for (size_t i=0; i<dirCount; i++) {
         const char *res = resDirs[i];
         if (res) {
@@ -1094,8 +1065,60 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
                 return UNKNOWN_ERROR;
             }
         }
-        
     }
+
+    //add by liufukang 2017-2-4 
+    if (bundle->getBaseInline() && bundle->getBaseDir()){
+        String8 resPath(bundle->getBaseDir());
+        resPath.appendPath(kResourceDir);
+
+        FileType type = getFileType(resPath);
+        if (type == kFileTypeNonexistent) {
+            fprintf(stderr, "ERROR: input directory '%s' does not exist\n", resPath.string());
+            return UNKNOWN_ERROR;
+        }
+        if (type != kFileTypeDirectory) {
+            fprintf(stderr, "ERROR: '%s' is not a directory\n", resPath.string());
+            return UNKNOWN_ERROR;
+        }
+
+        baseInline = true;
+        sp<AaptAssets> baseAsset = new AaptAssets();
+        current->setOverlay(baseAsset);
+        current = baseAsset;
+        count = current->slurpResourceTree(bundle, resPath);
+        if (count > 0) {
+          count = current->filter(bundle);
+        }
+
+        if (count < 0) {
+            totalCount = count;
+            goto bail;
+        }
+        totalCount += count;
+
+        String8 publicPath(bundle->getBaseDir());
+        publicPath.appendPath("public.xml");
+        type = getFileType(publicPath);
+        if ( type == kFileTypeRegular ){
+            sp<AaptAssets> publicAsset = new AaptAssets();
+            current->setOverlay(publicAsset);
+            current = publicAsset;
+
+            AaptGroupEntry kind;
+            String8 resType;
+            kind.initFromDirName(kValuesDir, &resType);
+
+            sp<AaptFile> publicFile = new AaptFile(publicPath, kind, resType);
+            const sp<AaptDir> valuesDir = current->makeDir(String8(kValuesDir));
+            valuesDir->addLeafFile(String8("public.xml"), publicFile);
+
+            current->resDirs().add(valuesDir);
+        }
+    }
+    //add by liufukang end
+
+
     /*
      * Now do any additional raw files.
      */
@@ -1655,6 +1678,11 @@ void AaptAssets::print(const String8& prefix) const
         const sp<AaptDir>& d = resdirs.itemAt(i);
         printf("%s  Type %s\n", prefix.string(), d->getLeaf().string());
         d->print(innerInnerPrefix);
+    }
+
+    if ( mOverlay != NULL ){
+        printf(">>>>Overlay:\n");
+        mOverlay->print(prefix);
     }
 }
 

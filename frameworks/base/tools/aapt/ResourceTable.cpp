@@ -78,6 +78,7 @@ status_t compileXmlFile(const Bundle* bundle,
                         ResourceTable* table,
                         int options)
 {
+    //printf("compileXmlFile:%s\n", String8(resourceName).string());
     if ((options&XML_COMPILE_STRIP_WHITESPACE) != 0) {
         root->removeWhitespace(true, NULL);
     } else  if ((options&XML_COMPILE_COMPACT_WHITESPACE) != 0) {
@@ -1837,6 +1838,7 @@ status_t ResourceTable::addPublic(const SourcePos& sourcePos,
                                   const String16& name,
                                   const uint32_t ident)
 {
+    //printf("addPublic, %s:%s:%s=0x%08x\n", String8(package).string(), String8(type).string(), String8(name).string(), int(ident));
     uint32_t rid = mAssets->getIncludedResources()
         .identifierForName(name.string(), name.size(),
                            type.string(), type.size(),
@@ -2235,7 +2237,7 @@ uint32_t ResourceTable::getResId(const String16& package,
                            &specFlags);
     }
 	//add by liufukang end
-
+//    printf(">>>>>getResId:%d\n", int(rid));
     if (rid != 0) {
         if (onlyPublic) {
             if ((specFlags & ResTable_typeSpec::SPEC_PUBLIC) == 0) {
@@ -4104,9 +4106,37 @@ status_t ResourceTable::Type::applyPublicEntryOrder()
         }
 
         if (!found) {
+#if 1
             p.sourcePos.error("Public symbol %s/%s declared here is not defined.",
                     String8(mName).string(), String8(name).string());
             hasError = true;
+#else
+            ConfigDescription nullConfig;
+            sp<ConfigList> c = new ConfigList(name, p.sourcePos);
+            c->setPublic(true);
+            c->addEntry(nullConfig, new Entry(name, p.sourcePos));
+
+
+            if (idx >= (int32_t)mOrderedConfigs.size()) {
+                mOrderedConfigs.resize(idx + 1);
+            }
+
+            mConfigs.add(name, c);
+            if (mOrderedConfigs.itemAt(idx) == NULL) {
+                mOrderedConfigs.replaceAt(c, idx);
+            } else {
+                sp<ConfigList> oe = mOrderedConfigs.itemAt(idx);
+                p.sourcePos.error("Multiple entry names declared for public entry"
+                            " identifier 0x%x in type %s (%s vs %s).\n"
+                            "%s:%d: Originally defined here.",
+                            idx+1, String8(mName).string(),
+                            String8(oe->getName()).string(),
+                            String8(name).string(),
+                            oe->getPublicSourcePos().file.string(),
+                            oe->getPublicSourcePos().line);
+                hasError = true;
+            }
+#endif
         }
     }
 

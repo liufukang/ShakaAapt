@@ -567,7 +567,7 @@ public:
 
     void print(const String8& prefix) const;
 
-    inline const Vector<sp<AaptDir> >& resDirs() const { return mResDirs; }
+    inline Vector<sp<AaptDir> >& resDirs() { return mResDirs; }
     sp<AaptDir> resDir(const String8& name) const;
 
     inline sp<AaptAssets> getOverlay() { return mOverlay; }
