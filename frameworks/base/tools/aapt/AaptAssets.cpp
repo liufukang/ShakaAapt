@@ -981,9 +981,6 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
     sp<AaptAssets> current = this;
 
     const int N = bundle->getFileSpecCount();
-
-    bool baseInline = false;//add by liufukang 2017-2-4 
-
     /*
      * If a package manifest was specified, include that first.
      */
@@ -1043,7 +1040,7 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
                 return UNKNOWN_ERROR;
             }
             if (type == kFileTypeDirectory) {
-                if (baseInline || i>0) {
+                if (i>0) {
                     sp<AaptAssets> nextOverlay = new AaptAssets();
                     current->setOverlay(nextOverlay);
                     current = nextOverlay;
@@ -1069,26 +1066,27 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
 
     //add by liufukang 2017-2-4 
     if (bundle->getBaseInline() && bundle->getBaseDir()){
-        String8 resPath(bundle->getBaseDir());
-        resPath.appendPath(kResourceDir);
+        String8 baseResPath(bundle->getBaseDir());
+        baseResPath.appendPath(kResourceDir);
 
-        FileType type = getFileType(resPath);
+        FileType type = getFileType(baseResPath);
         if (type == kFileTypeNonexistent) {
-            fprintf(stderr, "ERROR: input directory '%s' does not exist\n", resPath.string());
+            fprintf(stderr, "ERROR: input directory '%s' does not exist\n", baseResPath.string());
             return UNKNOWN_ERROR;
         }
         if (type != kFileTypeDirectory) {
-            fprintf(stderr, "ERROR: '%s' is not a directory\n", resPath.string());
+            fprintf(stderr, "ERROR: '%s' is not a directory\n", baseResPath.string());
             return UNKNOWN_ERROR;
         }
 
-        baseInline = true;
+        //slurp base asset
         sp<AaptAssets> baseAsset = new AaptAssets();
         current->setOverlay(baseAsset);
         current = baseAsset;
-        count = current->slurpResourceTree(bundle, resPath);
+        count = current->slurpResourceTree(bundle, baseResPath);
         if (count > 0) {
-          count = current->filter(bundle);
+            bundle->setAutoAddOverlay(true);
+            count = current->filter(bundle);
         }
 
         if (count < 0) {
@@ -1097,6 +1095,7 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
         }
         totalCount += count;
 
+        //slurp public.xml
         String8 publicPath(bundle->getBaseDir());
         publicPath.appendPath("public.xml");
         type = getFileType(publicPath);
@@ -1112,7 +1111,6 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
             sp<AaptFile> publicFile = new AaptFile(publicPath, kind, resType);
             const sp<AaptDir> valuesDir = current->makeDir(String8(kValuesDir));
             valuesDir->addLeafFile(String8("public.xml"), publicFile);
-
             current->resDirs().add(valuesDir);
         }
     }
