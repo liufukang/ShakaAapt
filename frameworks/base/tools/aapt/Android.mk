@@ -65,8 +65,7 @@ aaptHostStaticLibs := \
     libbase
 
 aaptCFlags := -DAAPT_VERSION=\"$(BUILD_NUMBER_FROM_FILE)\"
-aaptCFlags += -Wall -Werror
-
+aaptCFlags += -Wall -Werror -O0
 aaptHostLdLibs_linux := -lrt -ldl -lpthread
 
 # Statically link libz for MinGW (Win SDK under Linux),

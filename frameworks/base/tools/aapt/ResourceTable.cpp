@@ -4106,10 +4106,10 @@ status_t ResourceTable::Type::applyPublicEntryOrder()
         }
 
         if (!found) {
-#if 1
-            p.sourcePos.error("Public symbol %s/%s declared here is not defined.",
-                    String8(mName).string(), String8(name).string());
-            hasError = true;
+#if 0
+            // p.sourcePos.error("Public symbol %s/%s declared here is not defined.",
+            //         String8(mName).string(), String8(name).string());
+            // hasError = true;
 #else
             ConfigDescription nullConfig;
             sp<ConfigList> c = new ConfigList(name, p.sourcePos);
@@ -4152,10 +4152,17 @@ status_t ResourceTable::Type::applyPublicEntryOrder()
         sp<ConfigList> e = origOrder.itemAt(i);
         // There will always be enough room for the remaining entries.
         while (mOrderedConfigs.itemAt(j) != NULL) {
-            j++;
+            j++; 
+
+            if ((int32_t)j >= (int32_t)mOrderedConfigs.size()) {
+                mOrderedConfigs.resize(j + 1);
+            }  
         }
         mOrderedConfigs.replaceAt(e, j);
         j++;
+        if ((int32_t)j >= (int32_t)mOrderedConfigs.size()) {
+            mOrderedConfigs.resize(j + 1);
+        } 
     }
 
     return hasError ? STATUST(UNKNOWN_ERROR) : NO_ERROR;
