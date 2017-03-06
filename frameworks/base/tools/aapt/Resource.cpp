@@ -1404,7 +1404,7 @@ status_t buildResources(Bundle* bundle, const sp<AaptAssets>& assets, sp<ApkBuil
     // --------------------------------------------------------------------
 
     if (table.hasResources()) {
-        err = table.assignResourceIds();
+        err = table.assignResourceIds(bundle);
         if (err < NO_ERROR) {
             return err;
         }

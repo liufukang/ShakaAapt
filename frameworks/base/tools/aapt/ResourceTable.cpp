@@ -2609,7 +2609,7 @@ bool ResourceTable::getAttributeFlags(
     return false;
 }
 
-status_t ResourceTable::assignResourceIds()
+status_t ResourceTable::assignResourceIds(const Bundle* bundle)
 {
     const size_t N = mOrderedPackages.size();
     size_t pi;
@@ -2677,7 +2677,7 @@ status_t ResourceTable::assignResourceIds()
                 continue;
             }
 
-            err = t->applyPublicEntryOrder();
+            err = t->applyPublicEntryOrder(bundle);
             if (err != NO_ERROR && firstError == NO_ERROR) {
                 firstError = err;
             }
@@ -4052,7 +4052,7 @@ SortedVector<ConfigDescription> ResourceTable::Type::getUniqueConfigs() const {
     return unique;
 }
 
-status_t ResourceTable::Type::applyPublicEntryOrder()
+status_t ResourceTable::Type::applyPublicEntryOrder(const Bundle* bundle)
 {
     size_t N = mOrderedConfigs.size();
     Vector<sp<ConfigList> > origOrder(mOrderedConfigs);
@@ -4106,37 +4106,42 @@ status_t ResourceTable::Type::applyPublicEntryOrder()
         }
 
         if (!found) {
-#if 0
-            // p.sourcePos.error("Public symbol %s/%s declared here is not defined.",
-            //         String8(mName).string(), String8(name).string());
-            // hasError = true;
-#else
-            ConfigDescription nullConfig;
-            sp<ConfigList> c = new ConfigList(name, p.sourcePos);
-            c->setPublic(true);
-            c->addEntry(nullConfig, new Entry(name, p.sourcePos));
+            String8 pathDir = p.sourcePos.file.getPathDir();
+            if (bundle->getBaseInline() && pathDir == bundle->getBaseDir()){
+                ConfigDescription nullConfig;
+                sp<ConfigList> c = new ConfigList(name, p.sourcePos);
+                c->setPublic(true);
+
+                sp<Entry> e = new Entry(name, p.sourcePos);
+                String16 str;
+                e->setItem(p.sourcePos, str);
+                c->addEntry(nullConfig, e);
 
 
-            if (idx >= (int32_t)mOrderedConfigs.size()) {
-                mOrderedConfigs.resize(idx + 1);
-            }
+                if (idx >= (int32_t)mOrderedConfigs.size()) {
+                    mOrderedConfigs.resize(idx + 1);
+                }
 
-            mConfigs.add(name, c);
-            if (mOrderedConfigs.itemAt(idx) == NULL) {
-                mOrderedConfigs.replaceAt(c, idx);
-            } else {
-                sp<ConfigList> oe = mOrderedConfigs.itemAt(idx);
-                p.sourcePos.error("Multiple entry names declared for public entry"
-                            " identifier 0x%x in type %s (%s vs %s).\n"
-                            "%s:%d: Originally defined here.",
-                            idx+1, String8(mName).string(),
-                            String8(oe->getName()).string(),
-                            String8(name).string(),
-                            oe->getPublicSourcePos().file.string(),
-                            oe->getPublicSourcePos().line);
+                mConfigs.add(name, c);
+                if (mOrderedConfigs.itemAt(idx) == NULL) {
+                    mOrderedConfigs.replaceAt(c, idx);
+                } else {
+                    sp<ConfigList> oe = mOrderedConfigs.itemAt(idx);
+                    p.sourcePos.error("Multiple entry names declared for public entry"
+                                " identifier 0x%x in type %s (%s vs %s).\n"
+                                "%s:%d: Originally defined here.",
+                                idx+1, String8(mName).string(),
+                                String8(oe->getName()).string(),
+                                String8(name).string(),
+                                oe->getPublicSourcePos().file.string(),
+                                oe->getPublicSourcePos().line);
+                    hasError = true;
+                }
+            }else{
+                p.sourcePos.error("Public symbol %s/%s declared here is not defined.",
+                    String8(mName).string(), String8(name).string());
                 hasError = true;
             }
-#endif
         }
     }
 
