@@ -1097,8 +1097,13 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
 
         //slurp public.xml
         String8 publicPath(bundle->getBaseDir());
-        publicPath.appendPath("public.xml");
+        publicPath.appendPath("P.xml");
         type = getFileType(publicPath);
+        if (type == kFileTypeNonexistent) {
+            fprintf(stderr, "ERROR: public file '%s' does not exist\n", publicPath.string());
+            return UNKNOWN_ERROR;
+        }
+
         if ( type == kFileTypeRegular ){
             sp<AaptAssets> publicAsset = new AaptAssets();
             current->setOverlay(publicAsset);
