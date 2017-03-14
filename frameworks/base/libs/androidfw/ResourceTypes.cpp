@@ -5047,13 +5047,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                              uint32_t attrType,
                              bool enforcePrivate,
                              bool ignoreError) const
-{
-	//add by liufukang 2017-2-4 
-    if ( ignoreError ){
-        accessor = NULL;
-    }
-	//add by liufukang end
-	
+{	
     bool localizationSetting = accessor != NULL && accessor->getLocalizationSetting();
     const char* errorMsg = NULL;
 
@@ -5164,7 +5158,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             String16 package, type, name;
             if (!expandResourceRef(resourceRefName,resourceNameLen, &package, &type, &name,
                                    defType, defPackage, &errorMsg)) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, errorMsg);
                 }
                 return false;
@@ -5177,7 +5171,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                 if (enforcePrivate) {
                     if (accessor == NULL || accessor->getAssetsPackage() != package) {
                         if ((specFlags&ResTable_typeSpec::SPEC_PUBLIC) == 0) {
-                            if (accessor != NULL) {
+                            if (accessor != NULL && !ignoreError) {
                                 accessor->reportError(accessorCookie, "Resource is not public.");
                             }
                             return false;
@@ -5236,7 +5230,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             }
         }
 
-        if (accessor != NULL) {
+        if (accessor != NULL && !ignoreError) {
             accessor->reportError(accessorCookie, "No resource found that matches the given name");
         }
         return false;
@@ -5246,7 +5240,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
     // complain and bail.
     if (l10nReq == ResTable_map::L10N_SUGGESTED) {
         if (localizationSetting) {
-            if (accessor != NULL) {
+            if (accessor != NULL && !ignoreError) {
                 accessor->reportError(accessorCookie, "This attribute must be localized.");
             }
         }
@@ -5300,7 +5294,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
         if (!error) {
             if ((attrType&ResTable_map::TYPE_COLOR) == 0) {
                 if (!canStringCoerce) {
-                    if (accessor != NULL) {
+                    if (accessor != NULL && !ignoreError) {
                         accessor->reportError(accessorCookie,
                                 "Color types not allowed");
                     }
@@ -5313,7 +5307,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             }
         } else {
             if ((attrType&ResTable_map::TYPE_COLOR) != 0) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Color value not valid --"
                             " must be #rgb, #argb, #rrggbb, or #aarrggbb");
                 }
@@ -5341,7 +5335,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
         String16 package, type, name;
         if (!expandResourceRef(s+1, len-1, &package, &type, &name,
                                &attr16, defPackage, &errorMsg)) {
-            if (accessor != NULL) {
+            if (accessor != NULL && !ignoreError) {
                 accessor->reportError(accessorCookie, errorMsg);
             }
             return false;
@@ -5358,7 +5352,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
         if (rid != 0) {
             if (enforcePrivate) {
                 if ((specFlags&ResTable_typeSpec::SPEC_PUBLIC) == 0) {
-                    if (accessor != NULL) {
+                    if (accessor != NULL && !ignoreError) {
                         accessor->reportError(accessorCookie, "Attribute is not public.");
                     }
                     return false;
@@ -5404,7 +5398,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             //modify by liufukang end
         }
 
-        if (accessor != NULL) {
+        if (accessor != NULL && !ignoreError) {
             accessor->reportError(accessorCookie, "No resource found that matches the given name");
         }
         return false;
@@ -5416,7 +5410,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             // fall through on this error case because the float type should
             // be able to accept any integer value.
             if (!canStringCoerce && (attrType&ResTable_map::TYPE_FLOAT) == 0) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Integer types not allowed");
                 }
                 return false;
@@ -5424,7 +5418,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
         } else {
             if (((int32_t)outValue->data) < ((int32_t)attrMin)
                     || ((int32_t)outValue->data) > ((int32_t)attrMax)) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Integer value out of range");
                 }
                 return false;
@@ -5439,7 +5433,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                 return true;
             }
             if (!canStringCoerce) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Dimension types not allowed");
                 }
                 return false;
@@ -5449,14 +5443,14 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
                 return true;
             }
             if (!canStringCoerce) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Fraction types not allowed");
                 }
                 return false;
             }
         } else if ((attrType&ResTable_map::TYPE_FLOAT) == 0) {
             if (!canStringCoerce) {
-                if (accessor != NULL) {
+                if (accessor != NULL && !ignoreError) {
                     accessor->reportError(accessorCookie, "Float types not allowed");
                 }
                 return false;
@@ -5473,7 +5467,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             (s[3] == 'e' || s[3] == 'E')) {
             if ((attrType&ResTable_map::TYPE_BOOLEAN) == 0) {
                 if (!canStringCoerce) {
-                    if (accessor != NULL) {
+                    if (accessor != NULL && !ignoreError) {
                         accessor->reportError(accessorCookie, "Boolean types not allowed");
                     }
                     return false;
@@ -5494,7 +5488,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
             (s[4] == 'e' || s[4] == 'E')) {
             if ((attrType&ResTable_map::TYPE_BOOLEAN) == 0) {
                 if (!canStringCoerce) {
-                    if (accessor != NULL) {
+                    if (accessor != NULL && !ignoreError) {
                         accessor->reportError(accessorCookie, "Boolean types not allowed");
                     }
                     return false;
@@ -5609,7 +5603,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
     }
 
     if ((attrType&ResTable_map::TYPE_STRING) == 0) {
-        if (accessor != NULL) {
+        if (accessor != NULL && !ignoreError) {
             accessor->reportError(accessorCookie, "String types not allowed");
         }
         return false;
@@ -5619,7 +5613,7 @@ bool ResTable::stringToValue(Res_value* outValue, String16* outString,
     outValue->dataType = outValue->TYPE_STRING;
     if (outString) {
         bool failed = collectString(outString, s, len, preserveSpaces, &errorMsg);
-        if (accessor != NULL) {
+        if (accessor != NULL && !ignoreError) {
             accessor->reportError(accessorCookie, errorMsg);
         }
         return failed;
