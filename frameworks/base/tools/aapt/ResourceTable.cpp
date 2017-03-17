@@ -3153,8 +3153,6 @@ status_t ResourceTable::flatten(Bundle* bundle, const sp<const ResourceFilter>& 
                         typeSpecFlags[ei] |= htodl(ResTable_typeSpec::SPEC_PUBLIC);
                     }
 
-                    //typeSpecFlags[ei] |= htodl(ResTable_typeSpec::SPEC_PUBLIC);
-
                     if (skipEntireType) {
                         continue;
                     }

@@ -562,8 +562,11 @@ public:
     status_t buildIncludedAndBasedResources(Bundle* bundle);
     status_t addIncludedResources(const sp<AaptFile>& file);
     const ResTable& getIncludedResources() const;
-    const ResTable& getBasedResources() const;//add by liufukang 2017-2-4 
+	
+	//add by liufukang 2017-2-4
+    const ResTable& getBasedResources() const;
     const String16 getBasePackageName() const;
+	//add by liufukang end
 
     AssetManager& getAssetManager();
 

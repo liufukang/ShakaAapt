@@ -556,16 +556,6 @@ int main(int argc, char* const argv[])
                         goto bail;
                     }
                     bundle.setBaseInline(true);
-                }else if ( strcmp(cp, "-base-output-file") == 0 ) {
-                    argc--;
-                    argv++;
-                    if (!argc) {
-                        fprintf(stderr, "ERROR: No argument supplied for '--base-output-file' option\n");
-                        wantUsage = true;
-                        goto bail;
-                    }
-                    convertPath(argv[0]);
-                    bundle.setBaseOutputFile(argv[0]);
                 }
                 //add by liufukang end
                 else if (strcmp(cp, "-min-sdk-version") == 0) {

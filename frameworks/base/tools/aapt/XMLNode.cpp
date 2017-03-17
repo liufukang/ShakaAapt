@@ -1048,7 +1048,6 @@ status_t XMLNode::assignResourceIds(const sp<AaptAssets>& assets,
                         String8(pkg).string());
             }
             if (pkg.size() <= 0) continue;
-
             uint32_t res = table != NULL
                 ? table->getResId(e.name, &attr, &pkg, &errorMsg, nsIsPublic)
                 : assets->getIncludedResources().

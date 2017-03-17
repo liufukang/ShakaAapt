@@ -981,6 +981,7 @@ ssize_t AaptAssets::slurpFromArgs(Bundle* bundle)
     sp<AaptAssets> current = this;
 
     const int N = bundle->getFileSpecCount();
+
     /*
      * If a package manifest was specified, include that first.
      */

@@ -71,7 +71,6 @@ public:
           mBaseInline(false),
           mBaseDir(NULL),
           mBasePackage(NULL),
-          mBaseOutputFile(NULL),
           mArgc(0), mArgv(NULL)
         {}
     ~Bundle(void) {}
@@ -235,8 +234,6 @@ public:
     const char* getBaseDir() const { return mBaseDir; }
     void setBasePackage(const char* basePackage) { mBasePackage = basePackage; }
     const char* getBasePackage() const { return mBasePackage; }
-    void setBaseOutputFile(const char* outputFile) { mBaseOutputFile = outputFile; }
-    const char* getBaseOutputFile() const { return mBaseOutputFile; }
     void setBaseInline(bool isInline) { mBaseInline = isInline; }
     bool getBaseInline() const { return mBaseInline; }
     //add by liufukang end
@@ -375,8 +372,6 @@ private:
     const char* mBaseDir;
 
     const char* mBasePackage;
-
-    const char* mBaseOutputFile;
     //add by liufukang end
 
 

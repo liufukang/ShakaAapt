@@ -2430,36 +2430,6 @@ static status_t addResourcesToBuilder(const sp<AaptDir>& dir, const sp<ApkBuilde
     return NO_ERROR;
 }
 
-static status_t addResourcesToApkSplit(const sp<AaptDir>& dir, const sp<ApkSplit>& apkSplit) {
-    const size_t numDirs = dir->getDirs().size();
-    for (size_t i = 0; i < numDirs; i++) {
-        const sp<AaptDir>& subDir = dir->getDirs().valueAt(i);
-        status_t err = addResourcesToApkSplit(subDir, apkSplit);
-        if (err != NO_ERROR) {
-            return err;
-        }
-    }
-
-    const size_t numFiles = dir->getFiles().size();
-    for (size_t i = 0; i < numFiles; i++) {
-        sp<AaptGroup> gp = dir->getFiles().valueAt(i);
-        const size_t numConfigs = gp->getFiles().size();
-        for (size_t j = 0; j < numConfigs; j++) {
-            status_t err = NO_ERROR;
-
-            printf("addResourcesToApkSplit:%s->%s\n", gp->getPath().string(), gp->getFiles()[j]->getPrintableSource().string());
-
-            err = apkSplit->addEntry(gp->getPath(), gp->getFiles().valueAt(j));
-            if (err != NO_ERROR && err != ALREADY_EXISTS ) {
-                fprintf(stderr, "Failed to add %s (%s) to apkSplit.\n",
-                        gp->getPath().string(), gp->getFiles()[j]->getPrintableSource().string());
-                return err;
-            }
-        }
-    }
-    return NO_ERROR;
-}
-
 static String8 buildApkName(const String8& original, const sp<ApkSplit>& split) {
     if (split->isBase()) {
         return original;
@@ -2491,9 +2461,6 @@ int doPackage(Bundle* bundle)
     String8 dependencyFile;
     sp<ApkBuilder> builder;
 
-    const char* baseOutputFile;
-    sp<AaptAssets> baseAssets;
-
     // -c en_XA or/and ar_XB means do pseudolocalization
     sp<WeakResourceFilter> configFilter = new WeakResourceFilter();
     err = configFilter->parse(bundle->getConfigurations());
@@ -2515,8 +2482,6 @@ int doPackage(Bundle* bundle)
     }
 
     outputAPKFile = bundle->getOutputAPKFile();
-
-    baseOutputFile = bundle->getBaseOutputFile();
 
     // Make sure the filenames provided exist and are of the appropriate type.
     if (outputAPKFile) {
@@ -2552,19 +2517,6 @@ int doPackage(Bundle* bundle)
     if (bundle->getVerbose()) {
         assets->print(String8());
     }
-
-    baseAssets = new AaptAssets();
-
-#if 0
-    err = baseAssets->slurpFromArgs(bundle, true);
-    if (err < 0) {
-        goto bail;
-    }
-
-    if (bundle->getVerbose()) {
-        baseAssets->print(String8());
-    }
-#endif
 
     // Create the ApkBuilder, which will collect the compiled files
     // to write to the final APK (or sets of APKs if we are building
@@ -2698,52 +2650,12 @@ int doPackage(Bundle* bundle)
         const size_t numSplits = splits.size();
         for (size_t i = 0; i < numSplits; i++) {
             const sp<ApkSplit>& split = splits[i];
-
-            String8 outputPath = buildApkName(String8(outputAPKFile), split);            
+            String8 outputPath = buildApkName(String8(outputAPKFile), split);
             err = writeAPK(bundle, outputPath, split);
             if (err != NO_ERROR) {
                 fprintf(stderr, "ERROR: packaging of '%s' failed\n", outputPath.string());
                 goto bail;
             }
-        }
-    }
-
-    if(baseOutputFile){
-
-        sp<ApkSplit> baseOutputSet = new ApkSplit(std::set<ConfigDescription>(), new AndResourceFilter(), true);
-
-        //resources.arsc
-        const Vector<sp<ApkSplit> >& splits = builder->getSplits();
-        const size_t numSplits = splits.size();
-        for (size_t i = 0; i < numSplits; i++) {
-            const sp<ApkSplit>& split = splits[i];
-            if ( !split->isBase() ){
-                continue;
-            }
-
-            const std::set<OutputEntry>& entries = split->getEntries();
-            std::set<OutputEntry>::const_iterator iter = entries.begin();
-            for (; iter != entries.end(); iter++) {
-                const OutputEntry& entry = *iter;
-                if ( strcmp16(String16("resources.arsc").string(), String16(entry.getPath()).string()) == 0 ){
-                    baseOutputSet->addEntry(entry.getPath(), (sp<AaptFile>&)entry.getFile());
-                }
-            }
-        }
-
-        //res
-        err = addResourcesToApkSplit(baseAssets, baseOutputSet);
-        if (err != NO_ERROR) {
-            goto bail;
-        }
-
-        //public.xml
-
-        //write
-        err = writeAPK(bundle, String8(baseOutputFile), baseOutputSet);
-        if (err != NO_ERROR) {
-            fprintf(stderr, "ERROR: packaging of '%s' failed\n", baseOutputFile);
-            goto bail;
         }
     }
 
