@@ -2038,7 +2038,8 @@ bool ResourceTable::hasBagOrEntry(const String16& package,
     rid = mAssets->getBasedResources()
         .identifierForName(name.string(), name.size(),
                            type.string(), type.size(),
-                           package.string(), package.size());
+                           mAssets->getBasePackageName().string(), 
+                           mAssets->getBasePackageName().size());
     if (rid != 0) {
         return true;
     }
@@ -2233,8 +2234,13 @@ uint32_t ResourceTable::getResId(const String16& package,
         rid = mAssets->getBasedResources()
         .identifierForName(name.string(), name.size(),
                            type.string(), type.size(),
-                           package.string(), package.size(),
+                           mAssets->getBasePackageName().string(), 
+                           mAssets->getBasePackageName().size(),
                            &specFlags);
+
+        if (rid != 0 ){
+            onlyPublic = false;
+        }
     }
 	//add by liufukang end
 //    printf(">>>>>getResId:%d\n", int(rid));
@@ -2346,9 +2352,10 @@ bool ResourceTable::stringToValue(Res_value* outValue, StringPool* pool,
 //add by liufukang 2017-2-4 
 #if 1
         if (!res){
+            String16 pkgName = mAssets->getBasePackageName();
             res = mAssets->getBasedResources()
                 .stringToValue(outValue, &finalStr, str.string(), str.size(), preserveSpaces,
-                                coerceType, mBundle->getPackageId(), attrID, NULL, &mAssetsPackage, this,
+                                coerceType, mBundle->getPackageId(), attrID, NULL, &pkgName, this,
                                accessorCookie, attrType);
         }
 #endif         

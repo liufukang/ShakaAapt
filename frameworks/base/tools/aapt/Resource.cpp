@@ -2239,7 +2239,8 @@ static status_t writeLayoutClasses(
                     code = assets->getBasedResources().identifierForName(
                     name16.string(), name16.size(),
                     attr16.string(), attr16.size(),
-                    package16.string(), package16.size(), &typeSpecFlags);
+                    assets->getBasePackageName().string(), 
+                    assets->getBasePackageName().size(), &typeSpecFlags);
                 }
 				//add by liufukang end
 
@@ -2482,7 +2483,8 @@ static status_t writeTextLayoutClasses(
                     code = assets->getBasedResources().identifierForName(
                     name16.string(), name16.size(),
                     attr16.string(), attr16.size(),
-                    package16.string(), package16.size(), &typeSpecFlags);
+                    assets->getBasePackageName().string(), 
+                    assets->getBasePackageName().size(), &typeSpecFlags);
                 }
 				//add by liufukang end
 				

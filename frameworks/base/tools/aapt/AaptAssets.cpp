@@ -1627,6 +1627,8 @@ status_t AaptAssets::buildIncludedAndBasedResources(Bundle* bundle)
             if ( !mBasedAssets.addAssetPath(String8(bundle->getBaseDir()), NULL)) {
                 fprintf(stderr, "ERROR: base resources dir '%s' not found.\n", bundle->getBaseDir());
             }
+
+            mBasePackageName = String16("com.alipay.android.basejar");
         }  
         mHaveBasedAssets = true;
     }
@@ -1650,6 +1652,11 @@ const ResTable& AaptAssets::getIncludedResources() const
 const ResTable& AaptAssets::getBasedResources() const
 {
     return mBasedAssets.getResources(false);
+}
+
+const String16 AaptAssets::getBasePackageName() const
+{
+    return mBasePackageName;
 }
 
 AssetManager& AaptAssets::getAssetManager()

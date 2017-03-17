@@ -995,10 +995,11 @@ status_t XMLNode::parseValues(const sp<AaptAssets>& assets, const Bundle* bundle
 
 //add by liufukang 2017-2-4 
 #if 1
+                String16 pkgName = assets->getBasePackageName();
                 if (!assets->getBasedResources()
                     .stringToValue(&e.value, &e.string,
                                   e.string.string(), e.string.size(), true, true,
-                                  bundle->getPackageId(), e.nameResId, NULL, &defPackage, table, &ac)){
+                                  bundle->getPackageId(), e.nameResId, NULL, &pkgName, table, &ac)){
                     hasErrors = true;
                 }
 #else
@@ -1058,7 +1059,8 @@ status_t XMLNode::assignResourceIds(const sp<AaptAssets>& assets,
                 res = assets->getBasedResources().
                     identifierForName(e.name.string(), e.name.size(),
                                       attr.string(), attr.size(),
-                                      pkg.string(), pkg.size());
+                                      assets->getBasePackageName().string(), 
+                                      assets->getBasePackageName().size());
             }
 
             if (res != 0) {

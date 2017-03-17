@@ -563,6 +563,8 @@ public:
     status_t addIncludedResources(const sp<AaptFile>& file);
     const ResTable& getIncludedResources() const;
     const ResTable& getBasedResources() const;//add by liufukang 2017-2-4 
+    const String16 getBasePackageName() const;
+
     AssetManager& getAssetManager();
 
     void print(const String8& prefix) const;
@@ -615,6 +617,7 @@ private:
 	//add by liufukang 2017-2-4 
     bool mHaveBasedAssets; 
     AssetManager mBasedAssets;
+    String16 mBasePackageName;
 	//add by liufukang end
 
     sp<AaptAssets> mOverlay;
