@@ -8,7 +8,7 @@ export BinDir=ShakaAaptBin
 export USE_CCACHE=1
 export CCACHE_DIR=$(pwd)/.ccache
 export OUT_DIR=out-x86_64
-prebuilts/misc/linux-x86/ccache/ccache -M 50G
+#prebuilts/misc/linux-x86/ccache/ccache -M 50G
 
 rm -rf out-x86 out-x86_64
 
